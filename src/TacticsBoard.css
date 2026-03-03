@@ -1,0 +1,163 @@
+/* ── Root layout ──────────────────────────────────────────── */
+.tb-root {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: #1a1a2e;
+}
+
+/* ── Field ────────────────────────────────────────────────── */
+.tb-field-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  /* No border-radius on mobile — field goes edge-to-edge */
+}
+
+/* ── Controls bar (below field on mobile) ─────────────────── */
+.tb-controls {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 16px;
+  background: #12121f;
+  border-top: 1px solid #2d3748;
+}
+
+.tb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tb-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tb-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+
+.tb-legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.tb-legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tb-legend-sep {
+  display: inline-block;
+  width: 8px;
+}
+
+/* Buttons — all have 44px min touch target */
+.tb-reset-btn {
+  flex-shrink: 0;
+  background: #2d3748;
+  color: #e2e8f0;
+  border: 1.5px solid #4a5568;
+  border-radius: 8px;
+  padding: 0 16px;
+  min-height: 44px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tb-reset-btn:active {
+  background: #3d4e63;
+}
+
+/* ── Formation selector ───────────────────────────────────── */
+.tb-formation-row {
+  display: flex;
+  gap: 6px;
+}
+
+.tb-formation-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 8px;
+  border: 1.5px solid #4a5568;
+  background: #2d3748;
+  color: #94a3b8;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.tb-formation-btn:active {
+  background: #3d4e63;
+}
+
+.tb-formation-btn.active {
+  background: #1e4a8a;
+  border-color: #3182ce;
+  color: #fff;
+}
+
+/* ── Desktop (≥ 768px) ────────────────────────────────────── */
+@media (min-width: 768px) {
+  .tb-root {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .tb-field-wrapper {
+    border-radius: 10px;
+    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.6);
+  }
+
+  .tb-controls {
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    background: transparent;
+    border-top: none;
+    gap: 12px;
+  }
+
+  .tb-formation-row {
+    flex: 1;
+  }
+
+  .tb-formation-btn {
+    min-height: 38px;
+    font-size: 0.83rem;
+    padding: 0 10px;
+  }
+
+  .tb-reset-btn {
+    min-height: 38px;
+  }
+
+  .tb-title {
+    font-size: 1.05rem;
+  }
+}
