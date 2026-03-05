@@ -1,14 +1,27 @@
-// Renders a standard soccer pitch in SVG.
-// The viewBox coordinate space is 120 x 80 (metres, roughly).
-// All markings follow FIFA pitch proportions.
+// Renders a soccer pitch in SVG.
+// All markings are proportional to fieldW × fieldH so the same component
+// works for every format (futsal → 11v11).
+// `simplified` omits penalty arcs, spots and corner arcs for small-sided fields.
 
-const W = 120
-const H = 80
+export default function SoccerField({ fieldW = 120, fieldH = 80, simplified = false, children }) {
+  const W = fieldW
+  const H = fieldH
 
-export default function SoccerField({ children }) {
+  // Proportional markings — ratios derived from standard FIFA 120 × 80 field
+  const pd   = W * 0.1375        // penalty area depth        (16.5 / 120)
+  const phw  = H * 0.252         // penalty area half-width   (20.16 / 80)
+  const gad  = W * 0.0458        // goal area depth           (5.5 / 120)
+  const gahw = H * 0.1148        // goal area half-width      (9.16 / 80)
+  const ghw  = H * 0.0458        // goal half-width           (3.66 / 80)
+  const gdp  = Math.max(W * 0.02, 1.5) // goal depth (min 1.5 so it shows)
+  const psx  = W * 0.0917        // penalty spot dist from goal (11 / 120)
+  const ccr  = Math.min(W, H) * 0.115  // centre circle radius
+  const cor  = Math.min(W, H) * 0.009  // corner arc radius
+  const lw   = Math.max(W * 0.0033, 0.25) // line width
+
   const grass = '#2d8a4e'
-  const line = '#ffffff'
-  const lw = 0.4  // line width in SVG units
+  const dark  = '#278045'
+  const line  = '#ffffff'
 
   return (
     <svg
@@ -16,145 +29,81 @@ export default function SoccerField({ children }) {
       style={{ width: '100%', height: '100%', display: 'block' }}
       preserveAspectRatio="xMidYMid meet"
     >
-      {/* Pitch background */}
+      {/* Base grass */}
       <rect x={0} y={0} width={W} height={H} fill={grass} />
 
-      {/* Alternating grass stripes */}
+      {/* Alternating stripes */}
       {Array.from({ length: 10 }).map((_, i) => (
-        <rect
-          key={i}
-          x={i * 12}
-          y={0}
-          width={12}
-          height={H}
-          fill={i % 2 === 0 ? '#2d8a4e' : '#278045'}
-        />
+        <rect key={i} x={i * W / 10} y={0} width={W / 10} height={H}
+          fill={i % 2 === 0 ? grass : dark} />
       ))}
 
-      {/* Outer boundary */}
+      {/* Boundary */}
       <rect x={0} y={0} width={W} height={H} fill="none" stroke={line} strokeWidth={lw} />
 
       {/* Halfway line */}
       <line x1={W / 2} y1={0} x2={W / 2} y2={H} stroke={line} strokeWidth={lw} />
 
-      {/* Centre circle (r=9.15) */}
-      <circle cx={W / 2} cy={H / 2} r={9.15} fill="none" stroke={line} strokeWidth={lw} />
-      {/* Centre spot */}
-      <circle cx={W / 2} cy={H / 2} r={0.5} fill={line} />
+      {/* Centre circle + spot */}
+      <circle cx={W / 2} cy={H / 2} r={ccr} fill="none" stroke={line} strokeWidth={lw} />
+      <circle cx={W / 2} cy={H / 2} r={lw * 1.2} fill={line} />
 
-      {/* ── Left penalty area: 40.32 wide × 16.5 deep ── */}
-      <rect
-        x={0}
-        y={(H - 40.32) / 2}
-        width={16.5}
-        height={40.32}
-        fill="none"
-        stroke={line}
-        strokeWidth={lw}
-      />
-      {/* Left goal area: 18.32 wide × 5.5 deep */}
-      <rect
-        x={0}
-        y={(H - 18.32) / 2}
-        width={5.5}
-        height={18.32}
-        fill="none"
-        stroke={line}
-        strokeWidth={lw}
-      />
-      {/* Left goal (7.32 wide × 2.44 deep) */}
-      <rect
-        x={-2.44}
-        y={(H - 7.32) / 2}
-        width={2.44}
-        height={7.32}
-        fill="#aaa"
-        stroke={line}
-        strokeWidth={lw}
-        opacity={0.5}
-      />
-      {/* Left penalty spot */}
-      <circle cx={11} cy={H / 2} r={0.5} fill={line} />
-      {/* Left penalty arc (only the part outside the box) */}
-      <path
-        d={describeArc(11, H / 2, 9.15, -53, 53)}
-        fill="none"
-        stroke={line}
-        strokeWidth={lw}
-        clipPath="url(#leftPenaltyClip)"
-      />
-      <clipPath id="leftPenaltyClip">
-        <rect x={16.5} y={0} width={W} height={H} />
-      </clipPath>
+      {/* ── Left side ── */}
+      {/* Penalty area */}
+      <rect x={0} y={H / 2 - phw} width={pd} height={phw * 2}
+        fill="none" stroke={line} strokeWidth={lw} />
+      {/* Goal area */}
+      <rect x={0} y={H / 2 - gahw} width={gad} height={gahw * 2}
+        fill="none" stroke={line} strokeWidth={lw} />
+      {/* Goal */}
+      <rect x={-gdp} y={H / 2 - ghw} width={gdp} height={ghw * 2}
+        fill="#999" stroke={line} strokeWidth={lw} opacity={0.45} />
+      {/* Penalty spot + arc (full fields only) */}
+      {!simplified && <>
+        <circle cx={psx} cy={H / 2} r={lw * 1.2} fill={line} />
+        <path d={arc(psx, H / 2, ccr, -53, 53)}
+          fill="none" stroke={line} strokeWidth={lw} clipPath="url(#lpc)" />
+        <clipPath id="lpc">
+          <rect x={pd} y={0} width={W} height={H} />
+        </clipPath>
+      </>}
 
-      {/* ── Right penalty area ── */}
-      <rect
-        x={W - 16.5}
-        y={(H - 40.32) / 2}
-        width={16.5}
-        height={40.32}
-        fill="none"
-        stroke={line}
-        strokeWidth={lw}
-      />
-      <rect
-        x={W - 5.5}
-        y={(H - 18.32) / 2}
-        width={5.5}
-        height={18.32}
-        fill="none"
-        stroke={line}
-        strokeWidth={lw}
-      />
-      {/* Right goal */}
-      <rect
-        x={W}
-        y={(H - 7.32) / 2}
-        width={2.44}
-        height={7.32}
-        fill="#aaa"
-        stroke={line}
-        strokeWidth={lw}
-        opacity={0.5}
-      />
-      {/* Right penalty spot */}
-      <circle cx={W - 11} cy={H / 2} r={0.5} fill={line} />
-      {/* Right penalty arc */}
-      <path
-        d={describeArc(W - 11, H / 2, 9.15, 127, 233)}
-        fill="none"
-        stroke={line}
-        strokeWidth={lw}
-        clipPath="url(#rightPenaltyClip)"
-      />
-      <clipPath id="rightPenaltyClip">
-        <rect x={0} y={0} width={W - 16.5} height={H} />
-      </clipPath>
+      {/* ── Right side ── */}
+      <rect x={W - pd} y={H / 2 - phw} width={pd} height={phw * 2}
+        fill="none" stroke={line} strokeWidth={lw} />
+      <rect x={W - gad} y={H / 2 - gahw} width={gad} height={gahw * 2}
+        fill="none" stroke={line} strokeWidth={lw} />
+      <rect x={W} y={H / 2 - ghw} width={gdp} height={ghw * 2}
+        fill="#999" stroke={line} strokeWidth={lw} opacity={0.45} />
+      {!simplified && <>
+        <circle cx={W - psx} cy={H / 2} r={lw * 1.2} fill={line} />
+        <path d={arc(W - psx, H / 2, ccr, 127, 233)}
+          fill="none" stroke={line} strokeWidth={lw} clipPath="url(#rpc)" />
+        <clipPath id="rpc">
+          <rect x={0} y={0} width={W - pd} height={H} />
+        </clipPath>
+      </>}
 
       {/* Corner arcs */}
-      <path d={describeArc(0, 0, 1, 0, 90)} fill="none" stroke={line} strokeWidth={lw} />
-      <path d={describeArc(W, 0, 1, 90, 180)} fill="none" stroke={line} strokeWidth={lw} />
-      <path d={describeArc(0, H, 1, 270, 360)} fill="none" stroke={line} strokeWidth={lw} />
-      <path d={describeArc(W, H, 1, 180, 270)} fill="none" stroke={line} strokeWidth={lw} />
+      {!simplified && <>
+        <path d={arc(0, 0, cor, 0, 90)}     fill="none" stroke={line} strokeWidth={lw} />
+        <path d={arc(W, 0, cor, 90, 180)}   fill="none" stroke={line} strokeWidth={lw} />
+        <path d={arc(0, H, cor, 270, 360)}  fill="none" stroke={line} strokeWidth={lw} />
+        <path d={arc(W, H, cor, 180, 270)}  fill="none" stroke={line} strokeWidth={lw} />
+      </>}
 
-      {/* Player tokens rendered on top of the field */}
       {children}
     </svg>
   )
 }
 
-// Helpers for SVG arcs
-function polarToCartesian(cx, cy, r, angleDeg) {
-  const rad = ((angleDeg - 90) * Math.PI) / 180
-  return {
-    x: cx + r * Math.cos(rad),
-    y: cy + r * Math.sin(rad),
-  }
+function polarToCart(cx, cy, r, deg) {
+  const rad = ((deg - 90) * Math.PI) / 180
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
 }
 
-function describeArc(cx, cy, r, startAngle, endAngle) {
-  const start = polarToCartesian(cx, cy, r, endAngle)
-  const end = polarToCartesian(cx, cy, r, startAngle)
-  const largeArc = endAngle - startAngle <= 180 ? '0' : '1'
-  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`
+function arc(cx, cy, r, start, end) {
+  const s = polarToCart(cx, cy, r, end)
+  const e = polarToCart(cx, cy, r, start)
+  return `M ${s.x} ${s.y} A ${r} ${r} 0 ${end - start <= 180 ? 0 : 1} 0 ${e.x} ${e.y}`
 }
