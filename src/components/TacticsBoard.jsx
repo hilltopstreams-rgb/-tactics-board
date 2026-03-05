@@ -21,123 +21,127 @@ const DEFAULT_FORMAT = '7v7'
 // Player index 0 is always #1 (GK / deepest defender).
 
 const FORMATIONS = {
+  // All x values must be < W/2 so red tokens stay in the left half and
+  // mirrored blue tokens stay in the right half.
+  // W/2 per format: futsal=30, 4v4=30, 7v7=40, 9v9=50, 11v11=60
+
   futsal: {
     '2-1': [
       { x: 4,  y: 15 },  // GK
-      { x: 15, y: 9  },  // DefL
-      { x: 15, y: 21 },  // DefR
-      { x: 30, y: 15 },  // Pivot
-      { x: 48, y: 15 },  // Fwd
+      { x: 14, y: 9  },  // DefL
+      { x: 14, y: 21 },  // DefR
+      { x: 21, y: 15 },  // Pivot
+      { x: 27, y: 15 },  // Fwd
     ],
     '1-2': [
       { x: 4,  y: 15 },  // GK
-      { x: 14, y: 15 },  // Def
-      { x: 28, y: 9  },  // MidL
-      { x: 28, y: 21 },  // MidR
-      { x: 48, y: 15 },  // Fwd
+      { x: 13, y: 15 },  // Def
+      { x: 21, y: 8  },  // MidL
+      { x: 21, y: 22 },  // MidR
+      { x: 27, y: 15 },  // Fwd
     ],
     'diamond': [
       { x: 4,  y: 15 },  // GK
-      { x: 17, y: 15 },  // Back
-      { x: 30, y: 8  },  // WideL
-      { x: 30, y: 22 },  // WideR
-      { x: 46, y: 15 },  // Top
+      { x: 14, y: 15 },  // Back
+      { x: 21, y: 8  },  // SideL
+      { x: 21, y: 22 },  // SideR
+      { x: 27, y: 15 },  // Top
     ],
   },
 
   '4v4': {
     '2-1': [
       { x: 5,  y: 22.5 }, // GK
-      { x: 18, y: 14   }, // DefL
-      { x: 18, y: 31   }, // DefR
-      { x: 42, y: 22.5 }, // Fwd
+      { x: 17, y: 13   }, // DefL
+      { x: 17, y: 32   }, // DefR
+      { x: 27, y: 22.5 }, // Fwd
     ],
     '1-2-1': [
-      { x: 9,  y: 22.5 }, // Back
-      { x: 26, y: 13   }, // MidL
-      { x: 26, y: 32   }, // MidR
-      { x: 44, y: 22.5 }, // Fwd
+      { x: 8,  y: 22.5 }, // Back
+      { x: 20, y: 12   }, // MidL
+      { x: 20, y: 33   }, // MidR
+      { x: 27, y: 22.5 }, // Fwd
     ],
     '1-1-2': [
       { x: 5,  y: 22.5 }, // GK
-      { x: 24, y: 22.5 }, // Mid
-      { x: 40, y: 14   }, // FwdL
-      { x: 40, y: 31   }, // FwdR
+      { x: 18, y: 22.5 }, // Mid
+      { x: 27, y: 13   }, // FwdL
+      { x: 27, y: 32   }, // FwdR
     ],
   },
 
   '7v7': {
     '2-3-1': [
       { x: 5,  y: 27.5 }, // GK
-      { x: 19, y: 16   }, // DefL
-      { x: 19, y: 39   }, // DefR
-      { x: 36, y: 10   }, // MidL
-      { x: 37, y: 27.5 }, // MidC
-      { x: 36, y: 45   }, // MidR
-      { x: 57, y: 27.5 }, // Fwd
+      { x: 17, y: 15   }, // DefL
+      { x: 17, y: 40   }, // DefR
+      { x: 29, y: 9    }, // MidL
+      { x: 30, y: 27.5 }, // MidC
+      { x: 29, y: 46   }, // MidR
+      { x: 38, y: 27.5 }, // Fwd
     ],
     '3-2-1': [
       { x: 5,  y: 27.5 }, // GK
-      { x: 19, y: 11   }, // DefL
-      { x: 19, y: 27.5 }, // DefC
-      { x: 19, y: 44   }, // DefR
-      { x: 38, y: 18   }, // MidL
-      { x: 38, y: 37   }, // MidR
-      { x: 57, y: 27.5 }, // Fwd
+      { x: 17, y: 10   }, // DefL
+      { x: 17, y: 27.5 }, // DefC
+      { x: 17, y: 45   }, // DefR
+      { x: 29, y: 18   }, // MidL
+      { x: 29, y: 37   }, // MidR
+      { x: 38, y: 27.5 }, // Fwd
     ],
     '2-2-2': [
       { x: 5,  y: 27.5 }, // GK
-      { x: 19, y: 16   }, // DefL
-      { x: 19, y: 39   }, // DefR
-      { x: 38, y: 16   }, // MidL
-      { x: 38, y: 39   }, // MidR
-      { x: 57, y: 16   }, // FwdL
-      { x: 57, y: 39   }, // FwdR
+      { x: 17, y: 15   }, // DefL
+      { x: 17, y: 40   }, // DefR
+      { x: 28, y: 15   }, // MidL
+      { x: 28, y: 40   }, // MidR
+      { x: 38, y: 15   }, // FwdL
+      { x: 38, y: 40   }, // FwdR
     ],
     '1-3-2': [
       { x: 5,  y: 27.5 }, // GK
-      { x: 18, y: 27.5 }, // Sweeper
-      { x: 34, y: 10   }, // MidL
-      { x: 36, y: 27.5 }, // MidC
-      { x: 34, y: 45   }, // MidR
-      { x: 57, y: 18   }, // FwdL
-      { x: 57, y: 37   }, // FwdR
+      { x: 16, y: 27.5 }, // Sweeper
+      { x: 28, y: 9    }, // MidL
+      { x: 29, y: 27.5 }, // MidC
+      { x: 28, y: 46   }, // MidR
+      { x: 38, y: 17   }, // FwdL
+      { x: 38, y: 38   }, // FwdR
     ],
   },
 
   '9v9': {
     '3-2-3': [
       { x: 6,  y: 32.5 }, // GK
-      { x: 20, y: 13   }, // DefL
-      { x: 20, y: 32.5 }, // DefC
-      { x: 20, y: 52   }, // DefR
-      { x: 43, y: 20   }, // MidL
-      { x: 43, y: 45   }, // MidR
-      { x: 65, y: 13   }, // FwdL
-      { x: 67, y: 32.5 }, // FwdC
-      { x: 65, y: 52   }, // FwdR
+      { x: 19, y: 12   }, // DefL
+      { x: 19, y: 32.5 }, // DefC
+      { x: 19, y: 53   }, // DefR
+      { x: 34, y: 20   }, // MidL
+      { x: 34, y: 45   }, // MidR
+      { x: 46, y: 12   }, // FwdL
+      { x: 47, y: 32.5 }, // FwdC
+      { x: 46, y: 53   }, // FwdR
     ],
     '3-3-2': [
       { x: 6,  y: 32.5 }, // GK
-      { x: 20, y: 13   }, // DefL
-      { x: 20, y: 32.5 }, // DefC
-      { x: 20, y: 52   }, // DefR
-      { x: 43, y: 13   }, // MidL
-      { x: 43, y: 32.5 }, // MidC
-      { x: 43, y: 52   }, // MidR
-      { x: 65, y: 22   }, // FwdL
-      { x: 65, y: 43   }, // FwdR
+      { x: 19, y: 12   }, // DefL
+      { x: 19, y: 32.5 }, // DefC
+      { x: 19, y: 53   }, // DefR
+      { x: 34, y: 12   }, // MidL
+      { x: 34, y: 32.5 }, // MidC
+      { x: 34, y: 53   }, // MidR
+      { x: 46, y: 22   }, // FwdL
+      { x: 46, y: 43   }, // FwdR
     ],
     '2-4-2': [
       { x: 6,  y: 32.5 }, // GK
-      { x: 20, y: 18   }, // DefL
-      { x: 20, y: 47   }, // DefR
-      { x: 43, y: 10   }, // MidLL
-      { x: 43, y: 25   }, // MidL
-      { x: 43, y: 40   }, // MidR
-      { x: 43, y: 55   }, // MidRR
-      { x: 65, y: 22   }, // FwdL
-      { x: 65, y: 43   }, // FwdR
+      { x: 19, y: 18   }, // DefL
+      { x: 19, y: 47   }, // DefR
+      { x: 34, y: 10   }, // MidLL
+      { x: 34, y: 25   }, // MidL
+      { x: 34, y: 40   }, // MidR
+      { x: 34, y: 55   }, // MidRR
+      { x: 46, y: 22   }, // FwdL
+      { x: 46, y: 43   }, // FwdR
     ],
   },
 
