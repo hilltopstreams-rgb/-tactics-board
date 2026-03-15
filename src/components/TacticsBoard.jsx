@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react'
 import SoccerField from './SoccerField'
 import PlayerToken from './PlayerToken'
 import BallToken from './BallToken'
+import TacticsAssistant from './TacticsAssistant'
 import '../TacticsBoard.css'
 
 // ── Format configs ────────────────────────────────────────────────────────────
@@ -268,6 +269,17 @@ export default function TacticsBoard() {
     clearTrails()
   }, [format, formation, W, H, clearTrails])
 
+  const handleApplyVariation = useCallback((variation) => {
+    const { positions } = variation
+    setPlayers(prev => prev.map(p => {
+      const idx = parseInt(p.id.split('-')[1]) - 1
+      if (p.id.startsWith('red')  && positions.red?.[idx])  return { ...p, pos: { x: positions.red[idx][0],  y: positions.red[idx][1]  } }
+      if (p.id.startsWith('blue') && positions.blue?.[idx]) return { ...p, pos: { x: positions.blue[idx][0], y: positions.blue[idx][1] } }
+      return p
+    }))
+    clearTrails()
+  }, [clearTrails])
+
   const formatKeys    = Object.keys(FORMAT_CONFIGS)
   const formationKeys = Object.keys(FORMATIONS[format])
 
@@ -298,47 +310,56 @@ export default function TacticsBoard() {
       </div>
 
       <div className="tb-controls">
-        {/* Row 1: title + legend + reset */}
-        <div className="tb-header">
-          <div className="tb-header-left">
-            <span className="tb-title">Tactics Board</span>
-            <div className="tb-legend">
-              <span className="tb-legend-dot" style={{ background: '#e53e3e' }} /> Red
-              <span className="tb-legend-sep" />
-              <span className="tb-legend-dot" style={{ background: '#3182ce' }} /> Blue
+        <div className="tb-controls-row">
+          {/* Title + legend + reset */}
+          <div className="tb-header">
+            <div className="tb-header-left">
+              <span className="tb-title">Tactics Board</span>
+              <div className="tb-legend">
+                <span className="tb-legend-dot" style={{ background: '#e53e3e' }} /> Red
+                <span className="tb-legend-sep" />
+                <span className="tb-legend-dot" style={{ background: '#3182ce' }} /> Blue
+              </div>
+            </div>
+            <button className="tb-reset-btn" onClick={handleReset}>Reset</button>
+          </div>
+
+          {/* Format + formation selectors (side-by-side on desktop) */}
+          <div className="tb-selectors">
+            <div className="tb-format-row">
+              {formatKeys.map(f => (
+                <button
+                  key={f}
+                  className={`tb-format-btn${format === f ? ' active' : ''}`}
+                  onClick={() => handleFormatChange(f)}
+                >
+                  {FORMAT_CONFIGS[f].label}
+                </button>
+              ))}
+            </div>
+
+            <div className="tb-formation-row">
+              {formationKeys.map(f => (
+                <button
+                  key={f}
+                  className={`tb-formation-btn${formation === f ? ' active' : ''}`}
+                  onClick={() => handleFormationChange(f)}
+                >
+                  {f}
+                </button>
+              ))}
             </div>
           </div>
-          <button className="tb-reset-btn" onClick={handleReset}>Reset</button>
         </div>
 
-        {/* Row 2 + 3 (side-by-side on desktop) */}
-        <div className="tb-selectors">
-          {/* Format selector */}
-          <div className="tb-format-row">
-            {formatKeys.map(f => (
-              <button
-                key={f}
-                className={`tb-format-btn${format === f ? ' active' : ''}`}
-                onClick={() => handleFormatChange(f)}
-              >
-                {FORMAT_CONFIGS[f].label}
-              </button>
-            ))}
-          </div>
-
-          {/* Formation selector */}
-          <div className="tb-formation-row">
-            {formationKeys.map(f => (
-              <button
-                key={f}
-                className={`tb-formation-btn${formation === f ? ' active' : ''}`}
-                onClick={() => handleFormationChange(f)}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
+        <TacticsAssistant
+          format={format}
+          formation={formation}
+          playerCount={FORMAT_CONFIGS[format].playerCount}
+          fieldW={W}
+          fieldH={H}
+          onApply={handleApplyVariation}
+        />
       </div>
     </div>
   )

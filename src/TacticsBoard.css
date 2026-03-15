@@ -160,15 +160,21 @@
   }
 
   .tb-controls {
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
     padding: 0;
     background: transparent;
     border-top: none;
+    gap: 8px;
+  }
+
+  /* Top row: header + selectors side by side */
+  .tb-controls-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     gap: 10px;
   }
 
-  /* Header sits on the left, selectors fill the rest */
   .tb-header {
     flex-shrink: 0;
   }
@@ -203,4 +209,139 @@
     min-height: 36px;
     padding: 0 14px;
   }
+
+  /* AI assistant desktop sizing */
+  .ta-input  { height: 36px; }
+  .ta-btn    { height: 36px; min-width: 86px; }
+  .ta-card   { min-width: 0; }
+}
+
+/* ── AI Tactics Assistant ──────────────────────────────────── */
+.ta-root {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.ta-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.ta-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 10px;
+  background: #1e2235;
+  border: 1.5px solid #4a5568;
+  border-radius: 7px;
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  outline: none;
+  transition: border-color 0.12s;
+}
+
+.ta-input::placeholder { color: #4a5568; }
+.ta-input:focus        { border-color: #805ad5; }
+.ta-input:disabled     { opacity: 0.5; }
+
+.ta-btn {
+  flex-shrink: 0;
+  height: 44px;
+  min-width: 96px;
+  padding: 0 14px;
+  background: #553c9a;
+  border: 1.5px solid #6b46c1;
+  border-radius: 7px;
+  color: #e9d8fd;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, opacity 0.12s;
+}
+
+.ta-btn:hover:not(:disabled) { background: #6b46c1; }
+.ta-btn:disabled { opacity: 0.45; cursor: default; }
+
+/* Spinner */
+.ta-spinner {
+  width: 15px;
+  height: 15px;
+  border: 2.5px solid rgba(233, 216, 253, 0.25);
+  border-top-color: #e9d8fd;
+  border-radius: 50%;
+  animation: ta-spin 0.7s linear infinite;
+}
+
+@keyframes ta-spin { to { transform: rotate(360deg); } }
+
+.ta-error {
+  margin: 0;
+  padding: 0 2px;
+  font-size: 0.75rem;
+  color: #fc8181;
+}
+
+/* Variation cards */
+.ta-cards {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+.ta-card {
+  flex: 1;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px 10px;
+  background: #1e2235;
+  border: 1.5px solid #4a5568;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.ta-card:hover        { border-color: #805ad5; background: #252845; }
+.ta-card--active      { border-color: #6b46c1; background: #2d2060; }
+
+.ta-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.ta-card-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #e9d8fd;
+  white-space: nowrap;
+}
+
+.ta-card-formation {
+  font-size: 0.66rem;
+  color: #b794f4;
+  background: #2d2060;
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.ta-card--active .ta-card-formation { background: #44337a; }
+
+.ta-card-desc {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  line-height: 1.4;
 }
