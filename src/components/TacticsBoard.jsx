@@ -3,6 +3,8 @@ import SoccerField from './SoccerField'
 import PlayerToken from './PlayerToken'
 import BallToken from './BallToken'
 import TacticsAssistant from './TacticsAssistant'
+import PlaysDrawer from './PlaysDrawer'
+import { usePlays } from '../hooks/usePlays'
 import '../TacticsBoard.css'
 
 // ── Format configs ────────────────────────────────────────────────────────────
@@ -253,6 +255,12 @@ export default function TacticsBoard() {
   const [trails,    setTrails]    = useState({})
   const trailTimers = useRef({})
 
+  // ── Plays (save / load) ───────────────────────────────────────
+  const { plays, savePlay, deletePlay } = usePlays()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [saving,     setSaving]     = useState(false)
+  const [playName,   setPlayName]   = useState('')
+
   // Derived field dims — safe to use in callbacks via closure (deps include format)
   const { W, H, simplified } = FORMAT_CONFIGS[format]
 
@@ -326,6 +334,25 @@ export default function TacticsBoard() {
     clearTrails()
   }, [W, H, clearTrails])
 
+  const handleSaveConfirm = useCallback(() => {
+    const name = playName.trim()
+    if (!name) return
+    savePlay({ id: Date.now().toString(), name, format, formation, players, savedAt: Date.now() })
+    setSaving(false)
+    setPlayName('')
+  }, [playName, format, formation, players, savePlay])
+
+  const handleSaveCancel = useCallback(() => { setSaving(false); setPlayName('') }, [])
+
+  const handleLoadPlay = useCallback((play) => {
+    const cfg = FORMAT_CONFIGS[play.format]
+    setFormat(play.format)
+    setFormation(play.formation)
+    setPlayers(play.players)
+    setBallPos({ x: cfg.W / 2, y: cfg.H / 2 })
+    clearTrails()
+  }, [clearTrails])
+
   const formatKeys    = Object.keys(FORMAT_CONFIGS)
   const formationKeys = Object.keys(FORMATIONS[format])
 
@@ -398,6 +425,35 @@ export default function TacticsBoard() {
           </div>
         </div>
 
+        {/* Save Play / My Plays row */}
+        <div className="tb-plays-row">
+          {saving ? (
+            <>
+              <input
+                className="tb-save-input"
+                autoFocus
+                placeholder="Play name…"
+                value={playName}
+                onChange={e => setPlayName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter')  handleSaveConfirm()
+                  if (e.key === 'Escape') handleSaveCancel()
+                }}
+              />
+              <button className="tb-save-confirm-btn" onClick={handleSaveConfirm} disabled={!playName.trim()}>✓</button>
+              <button className="tb-save-cancel-btn"  onClick={handleSaveCancel}>✕</button>
+            </>
+          ) : (
+            <>
+              <button className="tb-save-btn"  onClick={() => setSaving(true)}>Save Play</button>
+              <button className="tb-plays-btn" onClick={() => setDrawerOpen(true)}>
+                My Plays
+                {plays.length > 0 && <span className="tb-plays-count">{plays.length}</span>}
+              </button>
+            </>
+          )}
+        </div>
+
         <TacticsAssistant
           format={format}
           formation={formation}
@@ -407,6 +463,14 @@ export default function TacticsBoard() {
           onApply={handleApplyVariation}
         />
       </div>
+
+      <PlaysDrawer
+        plays={plays}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onLoad={handleLoadPlay}
+        onDelete={deletePlay}
+      />
     </div>
   )
 }
