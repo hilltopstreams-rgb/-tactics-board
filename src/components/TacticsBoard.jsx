@@ -183,6 +183,49 @@ const TRAIL_LINGER_MS = 700
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
 
+// Iterative separation: push players apart until no two are closer than 8% of W.
+// Runs up to MAX_ITER passes; exits early once nothing moves.
+function separatePlayers(players, W, H) {
+  const MIN_DIST = W * 0.08
+  const MAX_ITER = 60
+  const pos = players.map(p => ({ x: p.pos.x, y: p.pos.y }))
+
+  for (let iter = 0; iter < MAX_ITER; iter++) {
+    let anyMoved = false
+    for (let i = 0; i < pos.length; i++) {
+      for (let j = i + 1; j < pos.length; j++) {
+        const dx = pos[j].x - pos[i].x
+        const dy = pos[j].y - pos[i].y
+        const dist = Math.hypot(dx, dy)
+        if (dist < MIN_DIST) {
+          if (dist < 1e-6) {
+            // Exact overlap — nudge apart horizontally
+            pos[i].x -= MIN_DIST * 0.5
+            pos[j].x += MIN_DIST * 0.5
+          } else {
+            const push = (MIN_DIST - dist) * 0.5
+            const nx = dx / dist
+            const ny = dy / dist
+            pos[i].x -= nx * push
+            pos[i].y -= ny * push
+            pos[j].x += nx * push
+            pos[j].y += ny * push
+          }
+          anyMoved = true
+        }
+      }
+    }
+    // Clamp to field after every full sweep
+    for (let i = 0; i < pos.length; i++) {
+      pos[i].x = clamp(pos[i].x, CLAMP_MARGIN, W - CLAMP_MARGIN)
+      pos[i].y = clamp(pos[i].y, CLAMP_MARGIN, H - CLAMP_MARGIN)
+    }
+    if (!anyMoved) break
+  }
+
+  return players.map((p, i) => ({ ...p, pos: pos[i] }))
+}
+
 function appendTrail(prev, id, x, y) {
   const existing = prev[id] ?? []
   const last = existing[existing.length - 1]
@@ -191,14 +234,14 @@ function appendTrail(prev, id, x, y) {
 }
 
 function buildPlayers(format, formation) {
-  const { W } = FORMAT_CONFIGS[format]
+  const { W, H } = FORMAT_CONFIGS[format]
   const positions = FORMATIONS[format][formation]
   const players = []
   positions.forEach((pos, i) => {
     players.push({ id: `red-${i + 1}`,  team: 'red',  number: i + 1, pos: { ...pos } })
     players.push({ id: `blue-${i + 1}`, team: 'blue', number: i + 1, pos: { x: W - pos.x, y: pos.y } })
   })
-  return players
+  return separatePlayers(players, W, H)
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -271,14 +314,17 @@ export default function TacticsBoard() {
 
   const handleApplyVariation = useCallback((variation) => {
     const { positions } = variation
-    setPlayers(prev => prev.map(p => {
-      const idx = parseInt(p.id.split('-')[1]) - 1
-      if (p.id.startsWith('red')  && positions.red?.[idx])  return { ...p, pos: { x: positions.red[idx][0],  y: positions.red[idx][1]  } }
-      if (p.id.startsWith('blue') && positions.blue?.[idx]) return { ...p, pos: { x: positions.blue[idx][0], y: positions.blue[idx][1] } }
-      return p
-    }))
+    setPlayers(prev => {
+      const updated = prev.map(p => {
+        const idx = parseInt(p.id.split('-')[1]) - 1
+        if (p.id.startsWith('red')  && positions.red?.[idx])  return { ...p, pos: { x: positions.red[idx][0],  y: positions.red[idx][1]  } }
+        if (p.id.startsWith('blue') && positions.blue?.[idx]) return { ...p, pos: { x: positions.blue[idx][0], y: positions.blue[idx][1] } }
+        return p
+      })
+      return separatePlayers(updated, W, H)
+    })
     clearTrails()
-  }, [clearTrails])
+  }, [W, H, clearTrails])
 
   const formatKeys    = Object.keys(FORMAT_CONFIGS)
   const formationKeys = Object.keys(FORMATIONS[format])

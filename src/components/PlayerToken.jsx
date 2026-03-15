@@ -1,20 +1,26 @@
 import { useRef, useCallback } from 'react'
 
-// Visual radius and touch-target radius in SVG units.
-// On a 375px-wide phone (viewBox 120) 1 SVG unit ≈ 3.1px.
-// HIT_R = 7.2 → ~44px diameter touch target on the smallest common phone.
-const VIS_R = 3.8
-const HIT_R = 7.2
+// Human silhouette: trapezoid body (wide shoulders, narrower hips) + round head.
+// All coords are relative to the player's pos (transform origin).
+// The anchor sits at mid-torso so trail lines attach naturally.
+//
+// Head top ≈ y -4.1  |  Body bottom ≈ y +2.6  |  Total height ≈ 6.7 SVG units
+// Body shoulder width ≈ 4.4  |  Body hip width ≈ 2.8
+const HEAD_R  = 1.3
+const HEAD_CY = -2.8
+// Trapezoid body with a concave collar curve at the top (Q creates the shoulder dip)
+const BODY    = 'M -2.2,-1.2 L -1.4,2.6 L 1.4,2.6 L 2.2,-1.2 Q 0,-2.1 -2.2,-1.2 Z'
+const SHADOW  = 0.4
 
 const TEAM_COLORS = {
-  red:  { fill: '#e53e3e', stroke: '#fff', text: '#fff' },
-  blue: { fill: '#3182ce', stroke: '#fff', text: '#fff' },
+  red:  { fill: '#e53e3e', stroke: '#fff' },
+  blue: { fill: '#3182ce', stroke: '#fff' },
 }
 
 export default function PlayerToken({ id, number, team, pos, onMove, onDragEnd }) {
   const svgRef   = useRef(null)
   const dragging = useRef(false)
-  const { fill, stroke, text } = TEAM_COLORS[team]
+  const { fill, stroke } = TEAM_COLORS[team]
 
   const clientToSvg = useCallback((clientX, clientY) => {
     const svg = svgRef.current
@@ -45,26 +51,35 @@ export default function PlayerToken({ id, number, team, pos, onMove, onDragEnd }
 
   return (
     <g
-      transform={`translate(${pos.x}, ${pos.y})`}
+      transform={`translate(${pos.x},${pos.y})`}
       style={{ cursor: 'grab' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Invisible oversized hit area for touch */}
-      <circle cx={0} cy={0} r={HIT_R} fill="transparent" />
+      {/* Invisible hit area covering the whole figure */}
+      <rect x={-5} y={-5} width={10} height={9} fill="transparent" />
+
       {/* Drop shadow */}
-      <circle cx={0.4} cy={0.4} r={VIS_R} fill="rgba(0,0,0,0.35)" />
-      {/* Main circle */}
-      <circle cx={0} cy={0} r={VIS_R} fill={fill} stroke={stroke} strokeWidth={0.5} />
-      {/* Jersey number */}
+      <g transform={`translate(${SHADOW},${SHADOW})`} style={{ pointerEvents: 'none' }}>
+        <path d={BODY} fill="rgba(0,0,0,0.28)" />
+        <circle cx={0} cy={HEAD_CY} r={HEAD_R} fill="rgba(0,0,0,0.28)" />
+      </g>
+
+      {/* Body */}
+      <path d={BODY} fill={fill} stroke={stroke} strokeWidth={0.4} style={{ pointerEvents: 'none' }} />
+
+      {/* Head */}
+      <circle cx={0} cy={HEAD_CY} r={HEAD_R} fill={fill} stroke={stroke} strokeWidth={0.4} style={{ pointerEvents: 'none' }} />
+
+      {/* Jersey number — centred in the body */}
       <text
-        x={0} y={0}
+        x={0} y={0.7}
         textAnchor="middle"
         dominantBaseline="central"
-        fill={text}
-        fontSize={2.9}
+        fill="#fff"
+        fontSize={2.2}
         fontWeight="700"
         fontFamily="system-ui, sans-serif"
         style={{ pointerEvents: 'none' }}
